@@ -14,12 +14,13 @@ defmodule ConfigParser do
   @spec parse(String.t()) :: %{}
   def parse(config_file) do
     read_file(config_file)
-    |> clean_up()
-    |> convert_to_map()
+    |> remove_comments()
+    |> split_by_newline()
+    |> transform_to_map()
   end
 
   @doc """
-  Returns the value of the given `setting` in the `config_file`.
+  Returns the value of the given config `parameter` from the given config `file`.
 
   ## Examples
 
@@ -29,31 +30,39 @@ defmodule ConfigParser do
   """
 
   @spec get(String.t(), String.t()) :: any()
-  def get(setting, config_file) do
-    config_map = parse(config_file)
-    config_map[setting]
+  def get(parameter, file) do
+    config_map = parse(file)
+    config_map[parameter]
   end
 
   @spec read_file(String.t()) :: String.t()
   defp read_file(file_name) do
-    path = Path.join(@priv_path, file_name)
-    {:ok, binary} = File.read(path)
+    file_path = Path.join(@priv_path, file_name)
+    {:ok, binary} = File.read(file_path)
     binary
   end
 
-  @spec clean_up(String.t()) :: [String.t()]
-  defp clean_up(string) do
-    string
-    |> String.replace(~r/ |^#.*/m, "")
-    |> String.split("\n", trim: true)
+  @spec remove_comments(String.t()) :: String.t()
+  defp remove_comments(string) do
+    String.replace(string, ~r/ |^#.*/m, "")
   end
 
-  @spec convert_to_map([String.t()]) :: %{}
-  defp convert_to_map(list) do
+  @spec split_by_newline(String.t()) :: [String.t()]
+  defp split_by_newline(string) do
+    String.split(string, "\n", trim: true)
+  end
+
+  @spec transform_to_map([String.t()]) :: %{}
+  defp transform_to_map(list) do
     for key_value <- list, reduce: %{} do
       acc ->
         [key | value] = String.split(key_value, "=")
-        true_value = TypeConverter.convert(List.to_string(value))
+
+        true_value =
+          value
+          |> List.to_string()
+          |> TypeConverter.convert()
+
         Map.put(acc, key, true_value)
     end
   end
