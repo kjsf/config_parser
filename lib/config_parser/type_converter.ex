@@ -1,4 +1,4 @@
-defmodule ConfigParser.Converter do
+defmodule ConfigParser.TypeConverter do
   def convert(value) when value in ["true", "on", "yes"], do: true
 
   def convert(value) when value in ["false", "off", "no"], do: false
