@@ -1,7 +1,7 @@
 defmodule ConfigParser.Converter do
-  def convert("true"), do: true
+  def convert(value) when value in ["true", "on", "yes"], do: true
 
-  def convert("false"), do: false
+  def convert(value) when value in ["false", "off", "no"], do: false
 
   def convert(value) do
     try do
@@ -11,7 +11,7 @@ defmodule ConfigParser.Converter do
         ArgumentError -> String.to_float(value)
       end
     rescue
-      _ -> value
+      ArgumentError -> value
     end
   end
 end
