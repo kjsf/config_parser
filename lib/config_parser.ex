@@ -8,14 +8,30 @@ defmodule ConfigParser do
   alias ConfigParser.TypeConverter
 
   @doc """
-  Parses given `config` file from the priv directory.
+  Parses given `config_file` from the priv directory.
   """
 
-  @spec parse_config(String.t()) :: %{}
-  def parse_config(config) do
-    read_file(config)
+  @spec parse(String.t()) :: %{}
+  def parse(config_file) do
+    read_file(config_file)
     |> clean_up()
-    |> convert_to_map
+    |> convert_to_map()
+  end
+
+  @doc """
+  Returns the value of the given `setting` in the `config_file`.
+
+  ## Examples
+
+    iex> ConfigParser.get("server_id", "config.ini")
+    55331
+
+  """
+
+  @spec get(String.t(), String.t()) :: any()
+  def get(setting, config_file) do
+    config_map = parse(config_file)
+    config_map[setting]
   end
 
   @spec read_file(String.t()) :: String.t()
