@@ -11,7 +11,7 @@ defmodule ConfigParser do
   Parses given `config_file` from the priv directory.
   """
 
-  @spec parse(String.t()) :: %{}
+  @spec parse(String.t()) :: map()
   def parse(config_file) do
     read_file(config_file)
     |> remove_comments()
@@ -52,18 +52,13 @@ defmodule ConfigParser do
     String.split(string, "\n", trim: true)
   end
 
-  @spec transform_to_map([String.t()]) :: %{}
+  @spec transform_to_map([String.t()]) :: map()
   defp transform_to_map(list) do
     for key_value <- list, reduce: %{} do
       acc ->
-        [key | value] = String.split(key_value, "=")
+        [key | [value]] = String.split(key_value, "=")
 
-        true_value =
-          value
-          |> List.to_string()
-          |> TypeConverter.convert()
-
-        Map.put(acc, key, true_value)
+        Map.put(acc, key, TypeConverter.convert(value))
     end
   end
 end
